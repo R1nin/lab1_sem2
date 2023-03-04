@@ -15,39 +15,70 @@ int DayWeek(int Day, int Month, int Year);
 
 bool LeapYear(int year);
 
-int main(int args, char *argv[]) {
+int main(int argc, char *argv[]) {
 
+	//setlocale(LC_ALL, "Russian");
 
 	HANDLE hStdOut = GetStdHandle(STD_OUTPUT_HANDLE);
 
 	setlocale(LC_ALL, "Russian");
-
-	int user_month = 0, user_year = 0, num = 12;
-	string ios{};
+	const int num = 12;
+	int user_month = 0, user_year = 0, copy = 0;
+	bool file = true;
+	char filename[30];
 
 	int jan[9]{ 1,2,3,4,5,6,7,8,9 };
 
 	ofstream calend;
 	
-	cout << "Select the mode of working with the file: ";
-	cin >> ios;
-	if (ios == "app")
-		calend.open("calendar_app.txt", ios_base::app);
-	else if (ios == "trunc")
-		calend.open("calendar_trunc.txt", ios_base::trunc);
+	
 		
+	if (argc == 1) {
 		do {
 			cout << "Введите месяц: ";
 			cin >> user_month;
 		} while (user_month > 13);
-		
+
 		do {
 			cout << "Ввведите год: ";
 			cin >> user_year;
 		} while ((user_year < 1500) && (user_year > 3000));
-		
+
 		cout << endl;
-	
+	}
+	else {
+		for (int i = 1; i < argc; ++i) {
+			if ((!strcmp(argv[i], "/M")) && (i + 1 < argc)) {
+				user_month = atoi(argv[i + 1]);
+			}
+			if ((!strcmp(argv[i], "/Y")) && (i + 1 < argc)) {
+				int s;
+				s = (argv[i + 1][0] - 48) * 1000 + (argv[i + 1][1] - 48) * 100 + (argv[i + 1][2] - 48) * 10 + (argv[i + 1][3] - 48);
+				user_year = s;
+			}
+			if ((!strcmp(argv[i], "/F")) && (i + 1 < argc)) {
+				//filename = argv[i + 1];
+				calend.open(argv[i + 1]);
+				/*for (int d = 0; d < sizeof(argv[i + 1]); d++) {
+					filename[d] = argv[i + 1][d];
+				}*/
+			}
+			if (!strcmp(argv[i], "/FCON")) {
+				file = false;
+			}
+			if (!strcmp(argv[i], "/?")) {
+				cout << "Алексеев Дмитрий\n   ИВТ-43-22\nВывод календаря на 1 год с введеннного месяца и года\n\n";
+			}
+		}
+	}
+	copy = user_month;
+
+	/*cout << "Select the mode of working with the file: ";
+	cin >> ios;
+	if (ios == "app")*/
+	calend.open(filename, ios_base::app);
+	/*else if (ios == "trunc")
+		calend.open("calendar_trunc.txt", ios_base::trunc);*/
 
 	// номер дня недели
 	int NumOfDay;
@@ -97,8 +128,7 @@ int main(int args, char *argv[]) {
 			daysOfMonth["February"] += LeapYear(user_year);
 
 		int j = 0;
-
-		for (int i = 1; i <= daysOfMonth[list_month[user_month - 1]]; i++) {
+		for (int i = 1; i < daysOfMonth[list_month[user_month - 1]] + 1; i++) {
 
 			NumOfDay = DayWeek(i, user_month, user_year);
 			if (NumOfDay == 0)
@@ -110,8 +140,10 @@ int main(int args, char *argv[]) {
 		cout << '\t' << '\t' << list_month[user_month - 1] << endl;
 		calend << '\t' << '\t' << list_month[user_month - 1] << endl;
 		// odd - even 
-		cout << setw(20) << "Odd/Even1       2       1       2" << endl;
-		calend << setw(20) << "Odd/Even1       2       1       2" << endl;
+		cout << "Odd/Even" << endl;
+		calend << "Odd/Even" << endl;
+		cout << setw(20) << "        1       2       1       2" << endl;
+		calend << setw(20) << "        1       2       1       2" << endl;
 		
 		for (int i = 0; i < 7; i++) {
 			SetConsoleTextAttribute(hStdOut, FOREGROUND_RED | FOREGROUND_GREEN | FOREGROUND_BLUE);
@@ -155,8 +187,8 @@ int main(int args, char *argv[]) {
 		if (user_month == 12) {
 			user_month = 0;
 			user_year++;
-
-			if (count == 12) {
+			
+			if (copy != 1) {
 				
 				cout << endl << "\t\t" << user_year << endl;
 				cout  << "\t" << "Happy New Year!!!" << endl << endl;
